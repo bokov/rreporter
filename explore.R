@@ -73,6 +73,8 @@ foareplace <- rbind(
   ,c('RFA-MH-17-257','RFA-MH-19-147')
 );
 
+foadefunct <- c('PA-14-156','PA-14-155','PAR-15-288');
+
 #' Predictors
 # Uncomment the below line after putting in the actual predictor column names
 # from your dat0
@@ -87,7 +89,9 @@ foareplace <- rbind(
 #' ### Ranking FOAs
 #' 
 #' #### Plots
-dat1 <- subset(dat0,!is.na(foa)&!grepl(activit_xcl,activity)) %>% 
+dat1 <- subset(dat0,!is.na(foa) & 
+                 !grepl(activit_xcl,activity) & 
+                 !foa %in% foadefunct) %>% 
   mutate(foa=submulti(foa,foareplace));
 dat1foa <- group_by(dat1,foa) %>% 
   summarise(score=median(as.numeric(match.score)),n=length(foa)) %>%
