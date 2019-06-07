@@ -22,14 +22,27 @@ if('pre_dictionary.R' %in% list.files()) source('pre_dictionary.R');
 #+ echo=F
 # read dat0 ----
 #' generic read function which auto-guesses file formats:
-dat0 <- t_autoread(inputdata,file_args=file_args);
-
-#' ## Optional: patient number
-#' 
-#' If you patient number variable (see `global.R`) is a number, force it to be
-#' treated as character rather than an integer to avoid missing values due to it 
-#' being too large
-if(pn %in% names(dat0)) dat0[[pn]] <- as.character(dat0[[pn]]);
+#dat0 <- t_autoread(inputdata,file_args=file_args);
+dat1 <- dat0 <- openxlsx::read.xlsx(inputdata);
+dat1$id <- rep(grep('\\d+',dat1$SPIN.ID,val=T),each=8);
+dat1 <- sapply(unique(dat1$id)
+               ,function(xx) with(subset(dat1,id==xx)
+                                  ,data.frame(id=xx
+                                              ,contact=Program.Title[2]
+                                              ,phone=Program.Title[3]
+                                              ,email=Program.Title[4]
+                                              ,sponsor_url=Program.Title[5]
+                                              ,program_url=Program.Title[6]
+                                              ,dates=Program.Title[7]
+                                              ,synopsis=Program.Title[8]
+                                              ,sponsor=Sponsor.Name[1]
+                                              ,sponsor_num=Sponsor.Number[1]
+                                              ,next_deadline=Deadline.Date[1]
+                                              ,funding=Funding.Amount[1]
+                                              ,fit=if('Fit' %in% names(dat1)){
+                                                Fit[1]} else NA
+                                              )),simplify=F) %>% 
+  do.call(rbind,.) %>% arrange(desc(fit));
 
 #+ echo=F
 # make data dictionary ----
