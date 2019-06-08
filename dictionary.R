@@ -41,13 +41,14 @@ dat1 <- sapply(unique(dat1$id)
                                               ,funding=Funding.Amount[1]
                                               ,fit=if('Fit' %in% names(dat1)){
                                                 Fit[1]} else NA
+                                              ,stringsAsFactors = F
                                               )),simplify=F) %>% 
   do.call(rbind,.) %>% arrange(desc(fit));
 
 #+ echo=F
 # make data dictionary ----
 #' ## Create the data dictionary
-dct0 <- tblinfo(dat0);
+dct1 <- tblinfo(dat1);
 
 #+ echo=F
 # a few dat0 hacks ----
@@ -61,6 +62,8 @@ dct0 <- tblinfo(dat0);
 # save out ----
 #' ## Save all the processed data to an rdata file 
 #' 
+write.csv(dat1,'grant_opps.csv',row.names=F);
+write.csv(subset(dat1,fit==3),'grant_shortlist.csv',row.names=F);
 #' ...which includes the audit trail
 suppressWarnings(tsave(file=paste0(.currentscript,'.rdata')
                        ,list=setdiff(ls(),.origfiles)));
