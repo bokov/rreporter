@@ -34,7 +34,21 @@ dat1 <- sapply(unique(dat1$id)
                                               ,sponsor_url=Program.Title[5]
                                               ,program_url=Program.Title[6]
                                               ,dates=Program.Title[7]
-                                              ,synopsis=Program.Title[8]
+                                              # extract activity codes
+                                              ,activity_cd=paste0(
+                                                na.omit(unique(
+                                                  ifelse(
+                                                    grepl(
+                                                      '[RUK][0-9]{2}'
+                                                      ,Program.Title[c(1,8)])
+                                                    ,gsub(
+                                                      '^.*([RUK][0-9]{2}).*$'
+                                                      ,'\\1'
+                                                      ,Program.Title[c(1,8)])
+                                                    ,NA))),collapse=';')
+                                              ,name=Program.Title[1]
+                                              ,synopsis=gsub('&#10;',''
+                                                             ,Program.Title[8])
                                               ,sponsor=Sponsor.Name[1]
                                               ,sponsor_num=Sponsor.Number[1]
                                               ,next_deadline=Deadline.Date[1]
@@ -44,6 +58,9 @@ dat1 <- sapply(unique(dat1$id)
                                               ,stringsAsFactors = F
                                               )),simplify=F) %>% 
   do.call(rbind,.) %>% arrange(desc(fit));
+
+id_blacklist <- if(file.exists('id_blacklist.txt')){
+  read.csv('id_blacklist.txt',header=F)[,1]} else c();
 
 #+ echo=F
 # make data dictionary ----
@@ -63,7 +80,8 @@ dct1 <- tblinfo(dat1);
 #' ## Save all the processed data to an rdata file 
 #' 
 write.csv(dat1,'grant_opps.csv',row.names=F);
-write.csv(subset(dat1,fit==3),'grant_shortlist.csv',row.names=F);
+write.csv(subset(dat1,fit==3 & !as.numeric(id) %in% id_blacklist)
+          ,'grant_shortlist.csv',row.names=F);
 #' ...which includes the audit trail
 suppressWarnings(tsave(file=paste0(.currentscript,'.rdata')
                        ,list=setdiff(ls(),.origfiles)));
